@@ -1,6 +1,7 @@
-import { Schema, model } from "mongoose"
+import { Types, Schema, model } from "mongoose"
 
 export interface IProduct {
+    _id: Types.ObjectId,
     name: string,
     sku: string,
     description: string,
@@ -11,6 +12,7 @@ export interface IProduct {
 }
 
 const productSchema = new Schema<IProduct>({
+    _id: Types.ObjectId,
     name: { type: String, required: true },
     sku: { type: String, required: true },
     description: { type: String, required: true },

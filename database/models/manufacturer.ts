@@ -1,6 +1,7 @@
-import { Schema, model } from "mongoose"
+import { Types, Schema, model } from "mongoose"
 
 export interface IManufacturer {
+    _id: Types.ObjectId,
     name: string,
     country: string,
     website: string,
@@ -10,6 +11,7 @@ export interface IManufacturer {
 }
 
 const manufacturerSchema = new Schema<IManufacturer>({
+    _id: Types.ObjectId,
     name: { type: String, required: true },
     country: { type: String, required: true },
     website: { type: String, required: true },
