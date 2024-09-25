@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose"
-import { IManufacturer } from "./manufacturer"
 
 export interface IProduct {
     name: string,
@@ -8,7 +7,7 @@ export interface IProduct {
     price: number,
     category: string,
     amountInStock: number,
-    manufacturer: IManufacturer
+    manufacturer: Schema.Types.ObjectId
 }
 
 const productSchema = new Schema<IProduct>({

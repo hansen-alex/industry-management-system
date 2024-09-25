@@ -1,5 +1,4 @@
 import { Schema, model } from "mongoose"
-import { IContact } from "./contact"
 
 export interface IManufacturer {
     name: string,
@@ -7,7 +6,7 @@ export interface IManufacturer {
     website: string,
     description: string,
     address: string,
-    contact: IContact
+    contact: Schema.Types.ObjectId
 }
 
 const manufacturerSchema = new Schema<IManufacturer>({
