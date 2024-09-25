@@ -120,54 +120,89 @@ app.get("/api/products", async (request: Request, response: Response) => {
     try {
         const products = await Product.find();
 
-        // const ma = await products.map(product => {
-        //     try {
-        //         // const manufacturer = Manufacturer.findById(product?.manufacturer);
-        //         // const contact = await Contact.findById(manufacturer?.contact);            
-        //         // return await { product: product, manufacturer: manufacturer, contact: contact };
-
-        //         const manufacturer = Manufacturer.findById(product?.manufacturer)
-        //         .then((manufacturer) => {
-        //             return { test: manufacturer };
-        //         })
-                
-
-        //         // return { test: manufacturer };
-        //     } catch (error) {
-        //         throw error;
-        //     }
-        // });
-        // console.log(ma);
-
-        // const a: any[] = [];
-        // await products.forEach(async product => {
-        //     const manufacturer = await Manufacturer.findById(product?.manufacturer);
-        //     const contact = await Contact.findById(manufacturer?.contact);
-
-        //     console.log("yo");
-        //     console.log({ product: product, manufacturer: manufacturer, contact: contact });
-        //     console.log("yo2");
-            
-        //     a.push({ product: product, manufacturer: manufacturer, contact: contact });
-        // });
-        
-        // console.log(a);
-        // console.log("yo3");
-        
-        
-
         response.status(200).send(await Promise.all(products.map(async product => {
             const manufacturer = await Manufacturer.findById(product?.manufacturer);
             const contact = await Contact.findById(manufacturer?.contact);
             return { product: product, manufacturer: manufacturer, contact: contact };
         })));
-        // response.status(200).send(products);
+    } catch (error) {
+        response.status(500).send(error);
+    }
+});
 
-        // response.status(200).send(await products.map(async product => {
-        //     const manufacturer = await Manufacturer.findById(product?.manufacturer);
-        //     const contact = await Contact.findById(manufacturer?.contact);            
-        //     return { product: product, manufacturer: manufacturer, contact: contact };
-        // }));
+//Retrieve a list of all products with less than 10 units in stock
+app.get("/api/products/low-stock", async (request: Request, response: Response) => {
+    try {
+        const lowStockProducts = await Product.find({ amountInStock: { $lt: 10 } });
+        response.status(200).send(lowStockProducts);
+    } catch (error) {
+        response.status(500).send(error);
+    } 
+});
+
+//Retrieve a compact list of products with less than 5 items in stock (including only the manufacturer's and the contact's name, phone and email)
+app.get("/api/products/critical-stock", async (request: Request, response: Response) => {
+    try {
+        const criticalStockProducts = await Product.find({ amountInStock: { $lt: 5 } });
+        response.status(200).send(await Promise.all(criticalStockProducts.map(async product => {
+            const manufacturer = await Manufacturer.findById(product?.manufacturer);
+            const contact = await Contact.findById(manufacturer?.contact);
+
+            return {
+                _id: product._id,
+                name: product.name,
+                amountInStock: product.amountInStock,
+                manufacturer: manufacturer?.name,
+                contactName: contact?.name,
+                contactPhone: contact?.phone,
+                contactEmail: contact?.email,
+            };
+        })));
+    } catch (error) {
+        response.status(500).send(error);
+    } 
+});
+
+//Summarize the total value of all products in stock
+app.get("/api/products/total-stock-value", async (request: Request, response: Response) => {
+    try {
+        const products = await Product.find();
+        response.status(200).send({ totalStockValue: products.reduce((accumulator, currentValue) => accumulator + currentValue.price * currentValue.amountInStock, 0) });
+    } catch (error) {
+        response.status(500).send(error);
+    } 
+});
+
+//Summarize the total value of products in stock per manufacturer
+app.get("/api/products/total-stock-value-by-manufacturer", async (request: Request, response: Response) => {
+    try {
+        const products = await Product.find();
+
+        const valueMap = new Map();
+        products.forEach(product => {
+            const manufacturerId = product.manufacturer.toString();
+            if(valueMap.has(manufacturerId))
+                valueMap.set(manufacturerId, valueMap.get(manufacturerId) + product.price * product.amountInStock);
+            else
+                valueMap.set(manufacturerId, product.price * product.amountInStock);
+        });
+
+        response.status(200).send(await Promise.all(Array.from(valueMap).map(async item => {
+            const manufacturer = await Manufacturer.findById(item[0]);
+            return { manufacturer: manufacturer, manufacturerTotalStockValue: item[1] };
+        })));
+    } catch (error) {
+        response.status(500).send(error);
+    } 
+});
+
+app.post("/api/products", async (request: Request, response: Response) => {
+    try {
+        const newProduct = await new Product(request.body);
+        newProduct._id = new Types.ObjectId();
+        await newProduct.save();
+
+        response.status(200).send(newProduct);
     } catch (error) {
         response.status(500).send(error);
     }
@@ -180,18 +215,6 @@ app.get("/api/products/:id", async (request: Request, response: Response) => {
         const contact = await Contact.findById(manufacturer?.contact);
 
         response.status(200).send({ product: product, manufacturer: manufacturer, contact: contact });
-    } catch (error) {
-        response.status(500).send(error);
-    }
-});
-
-app.post("/api/products", async (request: Request, response: Response) => {
-    try {
-        const newProduct = await new Product(request.body);
-        newProduct._id = new Types.ObjectId();
-        await newProduct.save();
-
-        response.status(200).send(newProduct);
     } catch (error) {
         response.status(500).send(error);
     }
