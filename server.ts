@@ -1,15 +1,22 @@
 import dotenv from "dotenv"
 import express, { Request, Response } from "express"
+import { graphqlHTTP } from "express-graphql";
 import mongoose, { Types } from "mongoose";
 import { Contact } from "./database/models/contact";
 import { Manufacturer } from "./database/models/manufacturer";
 import { Product } from "./database/models/product";
+import { Schema } from "./database/graphql/schema";
 
 dotenv.config();
 
 const PORT = process.env.PORT;
 const app = express();
+
 app.use(express.json());
+app.use("/graphql", graphqlHTTP({
+    schema: Schema,
+    graphiql: true
+}));
 
 mongoose.connect(process.env.DB_URI as string, {
     user: process.env.DB_USER,
@@ -149,9 +156,7 @@ app.get("/api/products/critical-stock", async (request: Request, response: Respo
             const contact = await Contact.findById(manufacturer?.contact);
 
             return {
-                _id: product._id,
-                name: product.name,
-                amountInStock: product.amountInStock,
+                product: product,
                 manufacturer: manufacturer?.name,
                 contactName: contact?.name,
                 contactPhone: contact?.phone,
