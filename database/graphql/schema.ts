@@ -1,4 +1,5 @@
 import { GraphQLFloat, GraphQLID, GraphQLInt, GraphQLList, GraphQLObjectType, GraphQLSchema, GraphQLString } from "graphql";
+import { Types } from "mongoose";
 import { Contact } from "../models/contact";
 import { Manufacturer } from "../models/manufacturer";
 import { Product } from "../models/product";
@@ -131,6 +132,80 @@ const RootQuery = new GraphQLObjectType({
     }
 });
 
+const Mutation = new GraphQLObjectType({
+    name: "Mutation",
+    fields: {
+        addProduct: { //Create a new product.
+            type: ProductType,
+            args: {
+                name: { type: GraphQLString },
+                sku: { type: GraphQLString },
+                description: { type: GraphQLString },
+                price: { type: GraphQLFloat },
+                category: { type: GraphQLString },
+                amountInStock: { type: GraphQLInt },
+                manufacturer: { type: GraphQLID }
+            },
+            resolve(parent, args) {
+                const product = new Product({
+                    _id: new Types.ObjectId(),
+                    name: args.name,
+                    sku: args.sku,
+                    description: args.description,
+                    price: args.price,
+                    category: args.category,
+                    amountInStock: args.amountInStock,
+                    manufacturer: args.manufacturer,
+                });
+
+                return product.save();
+            }
+        },
+        updateProduct: { //Update an existing product by ID.
+            type: ProductType,
+            args: {
+                _id: { type: GraphQLID },
+                name: { type: GraphQLString },
+                sku: { type: GraphQLString },
+                description: { type: GraphQLString },
+                price: { type: GraphQLFloat },
+                category: { type: GraphQLString },
+                amountInStock: { type: GraphQLInt },
+                manufacturer: { type: GraphQLID }
+            },
+            async resolve(parent, args) {
+                const updateProduct = await Product.findByIdAndUpdate(
+                    args._id,
+                    {
+                        $set: {
+                            name: args.name,
+                            sku: args.sku,
+                            description: args.description,
+                            price: args.price,
+                            category: args.category,
+                            amountInStock: args.amountInStock,
+                            manufacturer: args.manufacturer
+                        }
+                    },
+                    { new: true }
+                );
+
+                return updateProduct;
+            }
+        },
+        deleteProduct: { //Delete a product by ID.
+            type: ProductType,
+            args: {
+                _id: { type: GraphQLID }
+            },
+            async resolve(parent, args) {
+                return await Product.findByIdAndDelete(args._id);
+            }
+        }
+    }
+});
+
 export const Schema = new GraphQLSchema({
     query: RootQuery,
+    mutation: Mutation
 });

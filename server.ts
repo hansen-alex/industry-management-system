@@ -55,7 +55,7 @@ app.post("/api/contacts", async (request: Request, response: Response) => {
 
 app.put("/api/contacts/:id", async (request: Request, response: Response) => {
     try {
-        const updatedContact = await Contact.findByIdAndUpdate(request.params.id, request.body);
+        const updatedContact = await Contact.findByIdAndUpdate(request.params.id, request.body, { new: true });
         response.status(200).send(updatedContact);
     } catch (error) {
         response.status(500).send(error);
@@ -105,7 +105,7 @@ app.post("/api/manufacturers", async (request: Request, response: Response) => {
 
 app.put("/api/manufacturers/:id", async (request: Request, response: Response) => {
     try {
-        const updatedManufacturer = await Manufacturer.findByIdAndUpdate(request.params.id, request.body);
+        const updatedManufacturer = await Manufacturer.findByIdAndUpdate(request.params.id, request.body, { new: true });
         response.status(200).send(updatedManufacturer);
     } catch (error) {
         response.status(500).send(error);
@@ -227,7 +227,7 @@ app.get("/api/products/:id", async (request: Request, response: Response) => {
 
 app.put("/api/products/:id", async (request: Request, response: Response) => {
     try {
-        const updatedProduct = await Product.findByIdAndUpdate(request.params.id, request.body);
+        const updatedProduct = await Product.findByIdAndUpdate(request.params.id, request.body, { new: true });
         response.status(200).send(updatedProduct);
     } catch (error) {
         response.status(500).send(error);
