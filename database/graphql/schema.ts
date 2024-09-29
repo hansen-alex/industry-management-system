@@ -27,6 +27,15 @@ const ManufacturerType = new GraphQLObjectType({
     })
 });
 
+const ProductManufacturerContactType = new GraphQLObjectType({
+    name: "ProductManufacturerContactType",
+    fields: () => ({
+        product: { type: ProductType },
+        manufacturer: { type: ManufacturerType },
+        contact: { type: ContactType },
+    })
+});
+
 const ProductType = new GraphQLObjectType({
     name: "Product",
     fields: () => ({
@@ -45,16 +54,26 @@ const RootQuery = new GraphQLObjectType({
     name: "RootQueryType",
     fields: {
         products: { //Retrieve a list of all products.
-            type: new GraphQLList(ProductType),
-            resolve() {
-                return Product.find();
+            type: new GraphQLList(ProductManufacturerContactType),
+            async resolve() {
+                const products = await Product.find();
+
+                return await Promise.all(products.map(async product => {
+                    const manufacturer = await Manufacturer.findById(product?.manufacturer);
+                    const contact = await Contact.findById(manufacturer?.contact);
+                    return { product: product, manufacturer: manufacturer, contact: contact };
+                }));
             }
         },
         product: { //Retrieve details of a single product by ID.
-            type: ProductType,
+            type: ProductManufacturerContactType,
             args: { _id: { type: GraphQLID } },
-            resolve(parent, args) {
-                return Product.findById(args._id);
+            async resolve(parent, args) {
+                const product = await Product.findById(args._id);
+                const manufacturer = await Manufacturer.findById(product?.manufacturer);
+                const contact = await Contact.findById(manufacturer?.contact);
+        
+                return { product: product, manufacturer: manufacturer, contact: contact };
             }
         },
         totalStockValue: { //Retrieve the total value of all products in stock.
