@@ -120,7 +120,7 @@ const RootQuery = new GraphQLObjectType({
                 name: "CriticalStockProductType",
                 fields: () => ({
                     product: { type: ProductType },
-                    manufacturer: { type: GraphQLString },
+                    manufacturerName: { type: GraphQLString },
                     contactName: { type: GraphQLString },
                     contactPhone: { type: GraphQLString },
                     contactEmail: { type: GraphQLString }
@@ -134,7 +134,7 @@ const RootQuery = new GraphQLObjectType({
         
                     return {
                         product: product,
-                        manufacturer: manufacturer?.name,
+                        manufacturerName: manufacturer?.name,
                         contactName: contact?.name,
                         contactPhone: contact?.phone,
                         contactEmail: contact?.email,

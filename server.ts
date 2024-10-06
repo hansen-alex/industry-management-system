@@ -157,7 +157,7 @@ app.get("/api/products/critical-stock", async (request: Request, response: Respo
 
             return {
                 product: product,
-                manufacturer: manufacturer?.name,
+                manufacturerName: manufacturer?.name,
                 contactName: contact?.name,
                 contactPhone: contact?.phone,
                 contactEmail: contact?.email,
