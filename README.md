@@ -8,7 +8,7 @@ MongoDB
 
 ### .env
 
-PORT=0000
-DB_URI="..."
-DB_USER="..."
+PORT=0000  
+DB_URI="..."  
+DB_USER="..."  
 DB_PASS="..."
